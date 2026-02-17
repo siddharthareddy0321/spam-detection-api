@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+env/
+
+# Build files
+build/
+dist/
+*.spec
+*.exe
+
+# Database
+database.db
+
+# OS files
+.DS_Store
+Thumbs.db
