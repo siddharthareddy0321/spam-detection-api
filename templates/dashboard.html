@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spam Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(to right, #ff758c, #6a82fb);
+            min-height: 100vh;
+        }
+
+        .dashboard-card {
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+    <div class="card dashboard-card p-4">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Welcome {{ user }} 👋</h3>
+            <a href="/logout" class="btn btn-danger">Logout</a>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row text-white mb-4">
+
+            <div class="col-md-4">
+                <div class="stat-card bg-secondary">
+                    <h6>Total Messages</h6>
+                    <h2>{{ total }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-card bg-danger">
+                    <h6>Spam Messages</h6>
+                    <h2>{{ spam }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-card bg-success">
+                    <h6>Safe Messages</h6>
+                    <h2>{{ safe }}</h2>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Spam Detection -->
+        <h4 class="mb-3">Spam Detection</h4>
+
+        <form method="POST" action="/predict_message">
+
+            <div class="mb-3">
+                <textarea name="message" class="form-control" rows="4" placeholder="Enter message here..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-4">
+                Check Message
+            </button>
+        </form>
+
+        <!-- Number Check -->
+        <h4 class="mb-3">Mobile Number Check</h4>
+
+        <form method="POST" action="/check_number">
+            <div class="mb-3">
+                <input type="text" name="number" class="form-control" placeholder="Enter Mobile Number">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                Check Number
+            </button>
+        </form>
+
+        {% if result %}
+        <div class="alert alert-info mt-4 text-center">
+            <strong>{{ result }}</strong>
+        </div>
+        {% endif %}
+
+    </div>
+<div class="mt-5">
+    <div class="card p-4 shadow-sm">
+        <h4 class="text-center mb-4">Spam Analytics</h4>
+
+        <div class="d-flex justify-content-center">
+            <div style="width: 350px;">
+                <canvas id="spamChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="text-end mb-3">
+    <form action="/clear_history" method="POST">
+        <button class="btn btn-danger btn-sm">
+            Clear History
+        </button>
+    </form>
+</div>
+
+<hr class="my-5">
+
+<h4 class="mb-4 text-center">Prediction History</h4>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Input</th>
+                <th>Result</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+    {% for row in history_data %}
+    <tr>
+        <td>{{ row[0] }}</td>
+        <td>
+            {% if "Spam" in row[1] %}
+                <span class="badge bg-danger">{{ row[1] }}</span>
+            {% else %}
+                <span class="badge bg-success">{{ row[1] }}</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+        
+    </table>
+</div>
+
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const spamCount = Number("{{ spam }}") || 0;
+    const safeCount = Number("{{ safe }}") || 0;
+
+    const ctx = document.getElementById('spamChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Spam Messages', 'Safe Messages'],
+            datasets: [{
+                data: [spamCount, safeCount],
+                backgroundColor: ['#dc3545', '#198754'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+        legend: {
+            position: 'top'
+        }
+    }
+}
+
+    });
+</script>
+
+
+
+</body>
+</html>
