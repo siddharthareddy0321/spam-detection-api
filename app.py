@@ -6,6 +6,29 @@ import pickle
 
 
 app = Flask(__name__)
+def init_db():
+    conn = sqlite3.connect('/tmp/users.db')
+    cur = conn.cursor()
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            password BLOB NOT NULL
+        )
+    ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            message TEXT NOT NULL,
+            result TEXT NOT NULL
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
 app.secret_key = "super_secret_key"
 
 spam_numbers = [
@@ -99,7 +122,7 @@ def register_user():
         bcrypt.gensalt()
     )
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect('/tmp/users.db')
     cur = conn.cursor()
 
     cur.execute(
@@ -121,7 +144,7 @@ def login_user():
     username = request.form["username"]
     password = request.form["password"]
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect('/tmp/users.db')
     cur = conn.cursor()
 
     cur.execute(
@@ -154,7 +177,7 @@ def dashboard():
     if "user" not in session:
         return redirect("/")
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect('/tmp/users.db')
     cur = conn.cursor()
 
     cur.execute(
@@ -225,7 +248,7 @@ def predict_message():
         else:
             result = f"✅ Safe Message ({confidence}% confidence)"
 
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect('/tmp/users.db')
         cur = conn.cursor()
 
         cur.execute(
@@ -253,7 +276,7 @@ def check_number_route():
     else:
         result = check_number(number)
 
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect('/tmp/users.db')
         cur = conn.cursor()
 
         cur.execute(
@@ -275,7 +298,7 @@ def clear_history():
     if "user" not in session:
         return redirect("/")
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect('/tmp/users.db')
     cur = conn.cursor()
 
     cur.execute(
