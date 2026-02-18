@@ -6,29 +6,6 @@ import pickle
 
 
 app = Flask(__name__)
-def init_db():
-    conn = sqlite3.connect('/tmp/users.db')
-    cur = conn.cursor()
-
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            password BLOB NOT NULL
-        )
-    ''')
-
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            message TEXT NOT NULL,
-            result TEXT NOT NULL
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
 app.secret_key = "super_secret_key"
 
 spam_numbers = [
@@ -75,6 +52,27 @@ def check_number(number):
 # Load model
 model = pickle.load(open("model.pkl", "rb"))
 vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
+with sqlite3.connect('/tmp/users.db') as conn:
+    cur = conn.cursor()
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            password BLOB NOT NULL
+        )
+    ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            message TEXT NOT NULL,
+            result TEXT NOT NULL
+        )
+    ''')
+
+    conn.commit()
 
 @app.route("/predict_api", methods=["POST"])
 def predict_api():
